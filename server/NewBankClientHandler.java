@@ -32,9 +32,11 @@ public class NewBankClientHandler extends Thread{
 			// authenticate user and get customer ID token from bank for use in subsequent requests
 			CustomerID customer = bank.checkLogInDetails(userName, password);
 			// if the user is authenticated then get requests from the user and process them 
+			boolean loggedIn = false; // Initialize a flag variable
 			if(customer != null) {
+				loggedIn = true; // Set the flag to true if login is successful
 				out.println("Log In Successful. What do you want to do?");
-				while(true) {
+				while(loggedIn) {
 					String request = in.readLine();
 					System.out.println("Request from " + customer.getKey());
 					String responce = bank.processRequest(customer, request);
