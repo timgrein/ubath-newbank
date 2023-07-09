@@ -43,8 +43,12 @@ public class NewBank {
 	// commands from the NewBank customer are processed in this method
 	public synchronized String processRequest(CustomerID customer, String request) {
 		if(customers.containsKey(customer.getKey())) {
-			switch(request) {
-			case "SHOWMYACCOUNTS" : return showMyAccounts(customer);
+			String[] requestParts = request.split(" "); //Split request from user in sentences and put them in array
+			switch(requestParts[0]) { //first element of array "[0]" is user's command
+			case "SHOWMYACCOUNTS" :
+				return showMyAccounts(customer);
+			case "NEWACCOUNT" :
+				return newAccountCreation(customer, requestParts);
 			default : return "FAIL";
 			}
 		}
@@ -53,6 +57,26 @@ public class NewBank {
 	
 	private String showMyAccounts(CustomerID customer) {
 		return (customers.get(customer.getKey())).accountsToString();
+	}
+
+	/**
+	 * This method creates a new account for an existing customer
+	 * The account is created with a default amount of 50.0 if the chosen type of account exist in the bank
+	 * Otherwise this return a message with instructions
+	 * @param customer
+	 * @param requestParts
+	 * @return success or fail messages
+	 */
+	private String newAccountCreation(CustomerID customer, String[] requestParts) {
+		//if the type of account exist in the bank then create account
+		if(requestParts[1].equals("Main")|| requestParts[1].equals("Savings")|| requestParts[1].equals("Checking")) {
+			Customer currentCustomer = customers.get(customer.getKey());
+			currentCustomer.addAccount(new Account(requestParts[1], 50.0));
+			return "The account has successfully been created";
+		}
+		else{
+			return "The chose type of account does not exist, Please choose between Main, Savings and Checking" ;
+		}
 	}
 
 }
