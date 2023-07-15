@@ -49,6 +49,7 @@ public class NewBank {
 				return showMyAccounts(customer);
 			case "NEWACCOUNT" :
 				return newAccountCreation(customer, requestParts);
+				//Code for NEWACCOUNT goes over here
 			default : return "FAIL";
 			}
 		}
