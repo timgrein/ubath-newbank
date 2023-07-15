@@ -20,7 +20,7 @@ public class NewBank {
 		Customer christina = new Customer("password02");
 		christina.addAccount(new Account("Savings", 1500.0));
 		customers.put("Christina", christina);
-		
+		//use uppercase J for John.
 		Customer john = new Customer("password01");
 		john.addAccount(new Account("Checking", 250.0));
 		customers.put("John", john);
