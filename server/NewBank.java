@@ -47,6 +47,7 @@ public class NewBank {
 			switch(requestParts[0]) { //first element of array "[0]" is user's command
 			case "SHOWMYACCOUNTS" :
 				return showMyAccounts(customer);
+				//Code for SHOWMYACCOUNTS goes over here
 			case "NEWACCOUNT" :
 				return newAccountCreation(customer, requestParts);
 			default : return "FAIL";
