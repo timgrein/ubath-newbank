@@ -43,6 +43,9 @@ public class NewBankClientHandler extends Thread{
 						System.out.println("Request from " + customer.getKey());
 						String response = bank.processRequest(customer, request);
 						out.println(response);
+						out.println("Do you want to do something else? e.g. yes or no");
+						String otherRequest = in.readLine();
+						isLoggedIn = otherRequest.equals("yes"); //return to initial menu if there's no more request
 					}
 				}
 				else {
