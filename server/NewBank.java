@@ -73,8 +73,10 @@ public class NewBank {
 			//if the type of account exist in the bank then create account
 			if ( ("Main".equals(requestParts[1]) || "Savings".equals(requestParts[1]) || "Checking".equals(requestParts[1]))) {
 				Customer currentCustomer = customers.get(customer.getKey());
-				currentCustomer.addAccount(new Account(requestParts[1], 50.0));
-				return String.format("Your %s account has successfully been created. The initial balance is 50.0",requestParts[1]);
+                                 String accountType = requestParts[1];
+                                 double initialBalance = 50.0;
+				currentCustomer.addAccount(new Account(accountType, initialBalance));
+				return String.format("Your %s account has successfully been created. The initial balance is %.2f", accountType, initialBalance);
 			} else { //Otherwise, display message
 				return """
 				The type of account chosen does not exist. we have the following accounts available:
