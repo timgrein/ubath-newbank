@@ -72,7 +72,7 @@ public class NewBank {
 
 		if(requestParts.length > 1) { //if the request only has the command and type of account execute this
 			//if the type of account exist in the bank then create account
-			if ( (requestParts[1].equals("Main") || requestParts[1].equals("Savings") || requestParts[1].equals("Checking"))) {
+			if ( ("Main".equals(requestParts[1]) || "Savings".equals(requestParts[1]) || "Checking".equals(requestParts[1]))) {
 				Customer currentCustomer = customers.get(customer.getKey());
 				currentCustomer.addAccount(new Account(requestParts[1], 50.0));
 				return String.format("Your %s account has successfully been created. The initial balance is 50.0",requestParts[1]);
