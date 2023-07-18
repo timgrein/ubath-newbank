@@ -50,7 +50,7 @@ public class Customer {
 	public double checkBalance() {
 		double balance = 0;
 		for(Account a : accounts) {
-			balance = a.getCurrentBalance();
+			balance += a.getCurrentBalance();
 		}
 		return balance;
 	}
