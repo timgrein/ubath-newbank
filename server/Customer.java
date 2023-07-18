@@ -32,4 +32,26 @@ public class Customer {
 	public void addAccount(Account account) {
 		accounts.add(account);		
 	}
+
+	public void makePayment(String payment) {
+		double pay = Double.valueOf(payment);
+		for(Account a : accounts) {
+			a.accountPayment(pay);
+		}
+	}
+
+	public void makeDeduction(String payment) {
+		double pay = -Double.valueOf(payment);
+		for(Account a : accounts) {
+			a.accountDeduction(pay);
+		}
+	}
+
+	public double checkBalance() {
+		double balance = 0;
+		for(Account a : accounts) {
+			balance += a.getCurrentBalance();
+		}
+		return balance;
+	}
 }

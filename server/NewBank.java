@@ -49,6 +49,8 @@ public class NewBank {
 				return showMyAccounts(customer);
 			case "NEWACCOUNT" :
 				return newAccountCreation(customer, requestParts);
+			case "PAY" :
+				return payCommand(customer, requestParts);
 			default : return "FAIL";
 			}
 		}
@@ -94,6 +96,36 @@ public class NewBank {
 				- Savings
 				- Checking
 				""";
+		}
+	}
+
+	/**
+	 * This method allow customer to make payments to other bank users
+	 * The method first check if the payments is not to customer's own account and also if funds are available
+	 * @param customer
+	 * @param requestParts
+	 * @return success or fail messages
+	 */
+	private String payCommand(CustomerID customer, String[] requestParts) {
+		Customer currentCustomer = customers.get(customer.getKey());
+		double checkCurrentBalance = currentCustomer.checkBalance();
+		boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
+		if(isForeignAccount) {
+                         boolean enoughBalancePresent = checkCurrentBalance > Double.parseDouble(requestParts[2]);
+			if (enoughBalancePresent) {
+				//Make payment to person
+				Customer payCustomer = customers.get(requestParts[1]);
+				payCustomer.makePayment(requestParts[2]);
+				//Make deduction to the customer's account
+				currentCustomer.makeDeduction(requestParts[2]);
+				return "The Payment has been made";
+			} else {
+				return "There's not enough funds in the account";
+			}
+		}
+		//Otherwise display message
+		else{
+			return "Payment cannot be made to own account";
 		}
 	}
 
