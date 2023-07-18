@@ -93,8 +93,8 @@ public class NewBank {
 		double checkCurrentBalance = currentCustomer.checkBalance();
 		boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
 		if(isForeignAccount) {
-			//If the current balance is greater than payment being made
-			if (checkCurrentBalance > Double.parseDouble(requestParts[2])) {
+                         boolean enoughBalancePresent = checkCurrentBalance > Double.parseDouble(requestParts[2]);
+			if (enoughBalancePresent) {
 				//Make payment to person
 				Customer payCustomer = customers.get(requestParts[1]);
 				payCustomer.makePayment(requestParts[2]);
