@@ -49,7 +49,6 @@ public class NewBank {
 				return showMyAccounts(customer);
 			case "NEWACCOUNT" :
 				return newAccountCreation(customer, requestParts);
-			//PAY protocol goes over here
 			case "PAY" :
 				return payCommand(customer, requestParts);
 			default : return "FAIL";
