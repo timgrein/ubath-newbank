@@ -68,14 +68,32 @@ public class NewBank {
 	 * @return success or fail messages
 	 */
 	private String newAccountCreation(CustomerID customer, String[] requestParts) {
-		//if the type of account exist in the bank then create account
-		if(requestParts[1].equals("Main")|| requestParts[1].equals("Savings")|| requestParts[1].equals("Checking")) {
-			Customer currentCustomer = customers.get(customer.getKey());
-			currentCustomer.addAccount(new Account(requestParts[1], 50.0));
-			return "The account has successfully been created";
+
+		if(requestParts.length > 1) { //if the request only has the command and type of account execute this
+			//if the type of account exist in the bank then create account
+			if ( ("Main".equals(requestParts[1]) || "Savings".equals(requestParts[1]) || "Checking".equals(requestParts[1]))) {
+				Customer currentCustomer = customers.get(customer.getKey());
+                                 String accountType = requestParts[1];
+                                 double initialBalance = 50.0;
+				currentCustomer.addAccount(new Account(accountType, initialBalance));
+				return String.format("Your %s account has successfully been created. The initial balance is %.2f", accountType, initialBalance);
+			} else { //Otherwise, display message
+				return """
+				The type of account chosen does not exist. we have the following accounts available:
+				- Main
+				- Savings
+				- Checking
+					 """;
+			}
 		}
-		else{
-			return "The chose type of account does not exist, Please choose between Main, Savings and Checking" ;
+		else {// Otherwise, if the request only has the command, display message
+			return """
+				Please specify the type of account along with the command e.g. NEWACCOUNT Savings
+				we have the following accounts available:
+				- Main
+				- Savings
+				- Checking
+				""";
 		}
 	}
 
