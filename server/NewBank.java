@@ -91,8 +91,8 @@ public class NewBank {
 	private String payCommand(CustomerID customer, String[] requestParts) {
 		Customer currentCustomer = customers.get(customer.getKey());
 		double checkCurrentBalance = currentCustomer.checkBalance();
-		//If account is not being made to own account
-		if(!customer.getKey().equals(requestParts[1])) {
+		boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
+		if(isForeignAccount) {
 			//If the current balance is greater than payment being made
 			if (checkCurrentBalance > Double.parseDouble(requestParts[2])) {
 				//Make payment to person
