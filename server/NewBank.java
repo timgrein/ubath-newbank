@@ -5,11 +5,27 @@ import java.util.HashMap;
 public class NewBank {
 	
 	private static final NewBank bank = new NewBank();
-	private HashMap<String,Customer> customers;
+	private static HashMap<String,Customer> customers;
 	
 	private NewBank() {
 		customers = new HashMap<>();
 		addTestData();
+	}
+
+	// add a new account if user doesn't have one
+	// checks if there is another account under the same name
+	// (collects data from NewBankClientHandler)
+	public static String addNewAccount(String username, String password, String accountType) {
+		if (customers.containsKey(username)) {
+			System.out.println("The username already exists in the Hashmap");
+			return "An account with this name already exists, please try again.";
+		}
+		else {
+			Customer newCustomer = new Customer(password);
+			newCustomer.addAccount(new Account(accountType, 50.0));
+			customers.put(username, newCustomer);
+			return "Account successfully created";
+		}
 	}
 	
 	private void addTestData() {
