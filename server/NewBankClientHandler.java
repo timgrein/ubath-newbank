@@ -8,14 +8,14 @@ import java.net.Socket;
 
 public class NewBankClientHandler extends Thread{
 	
-	private newbank.server.NewBank bank;
+	private NewBank bank;
 	private BufferedReader in;
 	private PrintWriter out;
 	private boolean isLoggedIn;
 	
 	
 	public NewBankClientHandler(Socket s) throws IOException {
-		bank = newbank.server.NewBank.getBank();
+		bank = NewBank.getBank();
 		in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		out = new PrintWriter(s.getOutputStream(), true);
 		isLoggedIn = false; // Initialize login status to false
@@ -37,7 +37,7 @@ public class NewBankClientHandler extends Thread{
 					String password = in.readLine();
 					out.println("Checking Details...");
 					// authenticate user and get customer ID token from bank for use in subsequent requests
-					newbank.server.CustomerID customer = bank.checkLogInDetails(userName, password);
+					CustomerID customer = bank.checkLogInDetails(userName, password);
 					// if the user is authenticated then get requests from the user and process them
 					if(customer != null) {
 						isLoggedIn = true; // Set the flag to true if login is successful
@@ -63,7 +63,7 @@ public class NewBankClientHandler extends Thread{
 					String password = in.readLine();
 					out.println("What kind of account do want to make with us?: Main, Savings, or Checking");
 					String accountType = in.readLine();
-					String response = newbank.server.NewBank.addNewAccount(username, password, accountType);
+					String response = NewBank.addNewAccount(username, password, accountType);
 					out.println(response);
 				}
 				else {
