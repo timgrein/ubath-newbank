@@ -118,16 +118,39 @@ public class NewBank {
 	/**
 	 * This method allow customer to make payments to other bank users
 	 * The method first check if the payments is not to customer's own account and also if funds are available
+	 * In order to make payment the following format should be used: PAY accountNAME amount (example: PAY John 20)
 	 * @param customer
 	 * @param requestParts
 	 * @return success or fail messages
 	 */
 	private String payCommand(CustomerID customer, String[] requestParts) {
+		//if user just enters PAY
+		if (requestParts.length ==1) {
+			return "Please enter in this format: PAY accountName amount";
+		}
+
 		Customer currentCustomer = customers.get(customer.getKey());
 		double checkCurrentBalance = currentCustomer.checkBalance();
 		boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
+		boolean isNumeric = true;
+
+		//checks if the second thing they entered is a username that exists
+		if (!customers.containsKey(requestParts[1])) {
+			return "Please make sure the accountName is correct\nPlease enter like this - 'PAY accountName amount'";
+		}
+
+		//checks if third thing they entered is a number
+		try {
+			Double num = Double.parseDouble(requestParts[2]);
+		} catch (NumberFormatException e) {
+			isNumeric = false;
+		}
+		if (!isNumeric) {
+			return "Please check that you entered a correct value.\nPlease enter like this - 'PAY accountName amount'";
+		}
+
 		if(isForeignAccount) {
-                         boolean enoughBalancePresent = checkCurrentBalance > Double.parseDouble(requestParts[2]);
+			boolean enoughBalancePresent = checkCurrentBalance > Double.parseDouble(requestParts[2]);
 			if (enoughBalancePresent) {
 				//Make payment to person
 				Customer payCustomer = customers.get(requestParts[1]);
