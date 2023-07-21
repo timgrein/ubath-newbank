@@ -6,10 +6,10 @@ public class Account {
 	private double openingBalance;
 	private double currentBalance;
 
-	public Account(String accountName, double openingBalance) {
+	public Account(String accountName, double currentBalance) {
 		this.accountName = accountName;
 		this.openingBalance = openingBalance;
-		this.currentBalance = openingBalance;
+		this.currentBalance = currentBalance;
 	}
 	
 	public String toString() {
