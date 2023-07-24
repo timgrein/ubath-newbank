@@ -118,16 +118,64 @@ public class NewBank {
 	/**
 	 * This method allow customer to make payments to other bank users
 	 * The method first check if the payments is not to customer's own account and also if funds are available
+	 * In order to make payment the following format should be used: PAY accountNAME amount (example: PAY John 20)
 	 * @param customer
 	 * @param requestParts
 	 * @return success or fail messages
 	 */
 	private String payCommand(CustomerID customer, String[] requestParts) {
+		// If user just enters PAY
+		if (requestParts.length == 1) {
+			return "Please enter in this format: PAY yourAccountType, accountName, amount";
+		}
+
+		// If the user enters PAY without specifying an account type
+		if (requestParts.length < 4) {
+			return "Please enter the account type (Main, Savings, or Checking), the recipient's name, and the amount to transfer\n" +
+					"in this format: PAY yourAccountType, accountName, amount";
+		}
+
+		// Extract the yourAccountType, accountName of recipient, and amount from the requestParts array
+		String[] paymentDetails = requestParts[1].split(",");
+		if (paymentDetails.length != 3) {
+			return "Invalid input format. Please enter in this format: yourAccountType, accountName, amount";
+		}
+
+		String yourAccountType = paymentDetails[0].trim();
+
+		// Check if the yourAccountType is valid (Main, Savings, or Checking)
+		if (!("Main".equalsIgnoreCase(yourAccountType) || "Savings".equalsIgnoreCase(yourAccountType) || "Checking".equalsIgnoreCase(yourAccountType))) {
+			return "Invalid account type. Please use one of the following: Main, Savings, or Checking";
+		}
+
+		// Check if the specified account exists for the customer
+		//if (!customers.containsKey(customer.getKey()) || !customers.get(customer.getKey()).hasAccountOfType(yourAccountType)) {
+		//	return "You don't have an account of type " + yourAccountType + " to make the payment.";
+		//}
+
+
 		Customer currentCustomer = customers.get(customer.getKey());
 		double checkCurrentBalance = currentCustomer.checkBalance();
 		boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
+		boolean isNumeric = true;
+
+		//checks if the second thing they entered is a username that exists
+		if (!customers.containsKey(requestParts[1])) {
+			return "Please make sure the accountName is correct\nPlease enter like this - 'PAY accountName amount'";
+		}
+
+		//checks if third thing they entered is a number
+		try {
+			Double num = Double.parseDouble(requestParts[2]);
+		} catch (NumberFormatException e) {
+			isNumeric = false;
+		}
+		if (!isNumeric) {
+			return "Please check that you entered a correct value.\nPlease enter like this - 'PAY accountName amount'";
+		}
+
 		if(isForeignAccount) {
-                         boolean enoughBalancePresent = checkCurrentBalance > Double.parseDouble(requestParts[2]);
+			boolean enoughBalancePresent = checkCurrentBalance > Double.parseDouble(requestParts[2]);
 			if (enoughBalancePresent) {
 				//Make payment to person
 				Customer payCustomer = customers.get(requestParts[1]);
