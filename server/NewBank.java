@@ -145,6 +145,10 @@ public class NewBank {
 			return "The person your trying to pay does not have a " + targetAccount + " account";
 		}
 
+		if (requestParts[2].equals("0")) {
+			 return "You cannot pay someone £0";
+		}
+
 		if(isForeignAccount) {
 
 			if (currentCustomer.checkBalance(payerAccount) >= Double.parseDouble(requestParts[2])) {
