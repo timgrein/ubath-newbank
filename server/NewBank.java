@@ -1,5 +1,6 @@
 package newbank.server;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 public class NewBank {
@@ -57,7 +58,7 @@ public class NewBank {
 	}
 
 	// commands from the NewBank customer are processed in this method
-	public synchronized String processRequest(CustomerID customer, String request) {
+	public synchronized String processRequest(CustomerID customer, String request) throws IOException {
 		if(customers.containsKey(customer.getKey())) {
 			String[] requestParts = request.split(" "); //Split request from user in sentences and put them in array
 			switch(requestParts[0]) { //first element of array "[0]" is user's command
@@ -127,18 +128,30 @@ public class NewBank {
 	 * @param requestParts
 	 * @return success or fail messages
 	 */
-	private String payCommand(CustomerID customer, String[] requestParts) {
+	private String payCommand(CustomerID customer, String[] requestParts) throws IOException {
 		Customer currentCustomer = customers.get(customer.getKey());
-		double checkCurrentBalance = currentCustomer.checkBalance();
 		boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
+
+		Customer payCustomer = customers.get(requestParts[1]);
+
+		//get user input - asking them which account they would like to pay from and to
+		String payerAccount = NewBankClientHandler.getUserInput("From which account?");
+		if (!currentCustomer.getAccountTypes().contains(payerAccount)) {
+			return "You don't have a " + payerAccount + " account";
+		}
+
+		String targetAccount = NewBankClientHandler.getUserInput("To which account?");
+		if (!payCustomer.getAccountTypes().contains(targetAccount)) {
+			return "The person your trying to pay does not have a " + targetAccount + " account";
+		}
+
 		if(isForeignAccount) {
-                         boolean enoughBalancePresent = checkCurrentBalance > Double.parseDouble(requestParts[2]);
-			if (enoughBalancePresent) {
+
+			if (currentCustomer.checkBalance(payerAccount) >= Double.parseDouble(requestParts[2])) {
 				//Make payment to person
-				Customer payCustomer = customers.get(requestParts[1]);
-				payCustomer.makePayment(requestParts[2]);
+				payCustomer.makePayment(requestParts[2], targetAccount);
 				//Make deduction to the customer's account
-				currentCustomer.makeDeduction(requestParts[2]);
+				currentCustomer.makeDeduction(requestParts[2], payerAccount);
 				return "The Payment has been made";
 			} else {
 				return "There's not enough funds in the account";

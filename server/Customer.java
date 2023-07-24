@@ -40,24 +40,30 @@ public class Customer {
 		accountTypes.add(accountName);
 	}
 
-	public void makePayment(String payment) {
+	public void makePayment(String payment, String targetAccount) {
 		double pay = Double.valueOf(payment);
-		for(Account a : accounts) {
-			a.accountPayment(pay);
+		for (int i = 0; i < accounts.size(); i++) {
+			if (accounts.get(i).getAccountType().equals(targetAccount)) {
+				accounts.get(i).accountPayment(pay);
+			}
 		}
 	}
 
-	public void makeDeduction(String payment) {
+	public void makeDeduction(String payment, String payerAccount) {
 		double pay = -Double.valueOf(payment);
-		for(Account a : accounts) {
-			a.accountDeduction(pay);
+		for (int i = 0; i < accounts.size(); i++) {
+			if (accounts.get(i).getAccountType().equals(payerAccount)) {
+				accounts.get(i).accountPayment(pay);
+			}
 		}
 	}
 
-	public double checkBalance() {
+	public double checkBalance(String payerAccount) {
 		double balance = 0;
-		for(Account a : accounts) {
-			balance += a.getCurrentBalance();
+		for (int i = 0; i < accounts.size(); i++) {
+			if (accounts.get(i).getAccountType().equals(payerAccount)) {
+				balance = accounts.get(i).getCurrentBalance();
+			}
 		}
 		return balance;
 	}

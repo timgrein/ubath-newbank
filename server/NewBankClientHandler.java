@@ -9,8 +9,8 @@ import java.net.Socket;
 public class NewBankClientHandler extends Thread{
 	
 	private NewBank bank;
-	private BufferedReader in;
-	private PrintWriter out;
+	private static BufferedReader in;
+	private static PrintWriter out;
 	private boolean isLoggedIn;
 	
 	
@@ -19,6 +19,12 @@ public class NewBankClientHandler extends Thread{
 		in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		out = new PrintWriter(s.getOutputStream(), true);
 		isLoggedIn = false; // Initialize login status to false
+	}
+
+	//Function which allows you to get userInput from another class
+	public static String getUserInput(String message) throws IOException {
+		out.println(message);
+		return in.readLine();
 	}
 	
 	public void run() {
