@@ -92,8 +92,9 @@ public class NewBank {
 		if(requestParts.length > 1) { //if the request only has the command and type of account execute this
 			//if the type of account exist in the bank then create account
 			if ( ("Main".equals(requestParts[1]) || "Savings".equals(requestParts[1]) || "Checking".equals(requestParts[1]))) {
-				//checks if the accountType already exists
-				if (currentCustomer.getAccountTypes().contains(requestParts[1])) {
+
+				boolean accountAlreadyExists = currentCustomer.getAccountTypes().contains(requestParts[1]);
+				if (accountAlreadyExists) {
 					return "You already have a " + requestParts[1] + " account.\nWhat would you like to do?";
 				} else {
 					String accountType = requestParts[1];

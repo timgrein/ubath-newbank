@@ -42,27 +42,27 @@ public class Customer {
 
 	public void makePayment(String payment, String targetAccount) {
 		double pay = Double.valueOf(payment);
-		for (int i = 0; i < accounts.size(); i++) {
-			if (accounts.get(i).getAccountType().equals(targetAccount)) {
-				accounts.get(i).accountPayment(pay);
+		for (Account account : accounts) {
+			if (account.getAccountType().equals(targetAccount)) {
+				account.accountPayment(pay);
 			}
 		}
 	}
 
 	public void makeDeduction(String payment, String payerAccount) {
 		double pay = -Double.valueOf(payment);
-		for (int i = 0; i < accounts.size(); i++) {
-			if (accounts.get(i).getAccountType().equals(payerAccount)) {
-				accounts.get(i).accountPayment(pay);
+		for (Account account : accounts) {
+			if (account.getAccountType().equals(payerAccount)) {
+				account.accountPayment(pay);
 			}
 		}
 	}
 
 	public double checkBalance(String payerAccount) {
 		double balance = 0;
-		for (int i = 0; i < accounts.size(); i++) {
-			if (accounts.get(i).getAccountType().equals(payerAccount)) {
-				balance = accounts.get(i).getCurrentBalance();
+		for (Account account : accounts) {
+			if (account.getAccountType().equals(payerAccount)) {
+				balance = account.getCurrentBalance();
 			}
 		}
 		return balance;
