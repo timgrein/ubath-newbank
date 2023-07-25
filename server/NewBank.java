@@ -67,8 +67,6 @@ public class NewBank {
 				return newAccountCreation(customer, requestParts);
 			case "PAY" :
 				return payCommand(customer, requestParts);
-			case "LOGOUT":
-				return logOut();
 			default : return "FAIL";
 			}
 		}
@@ -77,11 +75,6 @@ public class NewBank {
 	
 	private String showMyAccounts(CustomerID customer) {
 		return (customers.get(customer.getKey())).accountsToString();
-	}
-
-	private String logOut() {
-		NewBankClientHandler.logOut();
-		return "Logging out";
 	}
 
 	/**
