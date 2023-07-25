@@ -22,7 +22,7 @@ public class NewBank {
 		}
 		else {
 			Customer newCustomer = new Customer(password);
-			newCustomer.addAccount(new Account(accountType, 50.0));
+			newCustomer.addAccount(new Account(accountType, 50.0, accountType), accountType);
 			customers.put(username, newCustomer);
 			return "Account successfully created";
 		}
@@ -30,15 +30,15 @@ public class NewBank {
 	
 	private void addTestData() {
 		Customer bhagy = new Customer("password03");
-		bhagy.addAccount(new Account("Main", 1200.0));
+		bhagy.addAccount(new Account("Main", 1200.0, "Main"), "Main");
 		customers.put("Bhagy", bhagy);
 		
 		Customer christina = new Customer("password02");
-		christina.addAccount(new Account("Savings", 1500.0));
+		christina.addAccount(new Account("Savings", 1500.0, "Savings"), "Savings");
 		customers.put("Christina", christina);
 		
 		Customer john = new Customer("password01");
-		john.addAccount(new Account("Checking", 250.0));
+		john.addAccount(new Account("Checking", 250.0, "Checking"), "Checking");
 		customers.put("John", john);
 	}
 	
@@ -93,15 +93,20 @@ public class NewBank {
 	 * @return success or fail messages
 	 */
 	private String newAccountCreation(CustomerID customer, String[] requestParts) {
+		Customer currentCustomer = customers.get(customer.getKey());
 
 		if(requestParts.length > 1) { //if the request only has the command and type of account execute this
 			//if the type of account exist in the bank then create account
 			if ( ("Main".equals(requestParts[1]) || "Savings".equals(requestParts[1]) || "Checking".equals(requestParts[1]))) {
-				Customer currentCustomer = customers.get(customer.getKey());
-                                 String accountType = requestParts[1];
-                                 double initialBalance = 50.0;
-				currentCustomer.addAccount(new Account(accountType, initialBalance));
-				return String.format("Your %s account has successfully been created. The initial balance is %.2f", accountType, initialBalance);
+				//checks if the accountType already exists
+				if (currentCustomer.getAccountTypes().contains(requestParts[1])) {
+					return "You already have a " + requestParts[1] + " account.\nWhat would you like to do?";
+				} else {
+					String accountType = requestParts[1];
+					double initialBalance = 50.0;
+					currentCustomer.addAccount(new Account(accountType, initialBalance, accountType), accountType);
+					return String.format("Your %s account has successfully been created. The initial balance is %.2f", accountType, initialBalance);
+				}
 			} else { //Otherwise, display message
 				return """
 				The type of account chosen does not exist. we have the following accounts available:

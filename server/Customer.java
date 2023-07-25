@@ -5,11 +5,17 @@ import java.util.ArrayList;
 public class Customer {
 	
 	private ArrayList<Account> accounts;
+	private ArrayList<String> accountTypes; //stores the accountTypes in an arraylist for easy retrieval
 	private String password;
 	
 	public Customer(String password) {
 		this.password = password;
 		accounts = new ArrayList<>();
+		accountTypes = new ArrayList<>();
+	}
+
+	public ArrayList<String> getAccountTypes() {
+		return accountTypes;
 	}
 
 	public String getPassword(){
@@ -29,8 +35,9 @@ public class Customer {
 		return s;
 	}
 
-	public void addAccount(Account account) {
-		accounts.add(account);		
+	public void addAccount(Account account, String accountName) {
+		accounts.add(account);
+		accountTypes.add(accountName);
 	}
 
 	public void makePayment(String payment) {

@@ -5,11 +5,17 @@ public class Account {
 	private String accountName;
 	private double openingBalance;
 	private double currentBalance;
+	private String accountType;
 
-	public Account(String accountName, double currentBalance) {
+	public Account(String accountName, double currentBalance, String accountType) {
 		this.accountName = accountName;
 		this.openingBalance = openingBalance;
 		this.currentBalance = currentBalance;
+		this.accountType = accountType;
+	}
+
+	public String getAccountType() {
+		return accountType;
 	}
 	
 	public String toString() {
