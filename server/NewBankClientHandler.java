@@ -64,6 +64,7 @@ public class NewBankClientHandler extends Thread{
 				// if they don't have an account
 				// let them create a name and password and what type of account they would like to open
 				if (answer.equals("no")) {
+					out.println("Initiating new account registration. Please enter the required information:");
 					out.println("Enter name:");
 					String username = in.readLine();
 					out.println("Enter password:");
