@@ -11,8 +11,7 @@ public class NewBankClientHandler extends Thread{
 	private NewBank bank;
 	private BufferedReader in;
 	private PrintWriter out;
-	private static boolean isLoggedIn;
-	private static boolean logOutRequested = false;
+	private boolean isLoggedIn;
 	
 	
 	public NewBankClientHandler(Socket s) throws IOException {
@@ -20,12 +19,6 @@ public class NewBankClientHandler extends Thread{
 		in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		out = new PrintWriter(s.getOutputStream(), true);
 		isLoggedIn = false; // Initialize login status to false
-	}
-
-	//if user has requested to logout - exit while loop
-	public static void logOut() {
-		logOutRequested = true;
-		isLoggedIn = false;
 	}
 	
 	public void run() {
@@ -75,14 +68,8 @@ public class NewBankClientHandler extends Thread{
 					out.println(response);
 				}
 				else {
-					//if user has requested to log out, don't print the fail message
-					if (logOutRequested) {
-						out.println("Successfully logged out");
-						out.println();
-					} else {
-						out.println("Log in Failed, try again");
-						out.println();
-					}
+					out.println("Log In Failed, try again");
+					out.println();
 				}
 			}
 		} catch (IOException e) {
