@@ -1,5 +1,6 @@
 package newbank.server;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 public class NewBank {
@@ -57,7 +58,7 @@ public class NewBank {
 	}
 
 	// commands from the NewBank customer are processed in this method
-	public synchronized String processRequest(CustomerID customer, String request) {
+	public synchronized String processRequest(CustomerID customer, String request) throws IOException {
 		if(customers.containsKey(customer.getKey())) {
 			String[] requestParts = request.split(" "); //Split request from user in sentences and put them in array
 			switch(requestParts[0]) { //first element of array "[0]" is user's command
@@ -98,8 +99,9 @@ public class NewBank {
 		if(requestParts.length > 1) { //if the request only has the command and type of account execute this
 			//if the type of account exist in the bank then create account
 			if ( ("Main".equals(requestParts[1]) || "Savings".equals(requestParts[1]) || "Checking".equals(requestParts[1]))) {
-				//checks if the accountType already exists
-				if (currentCustomer.getAccountTypes().contains(requestParts[1])) {
+
+				boolean accountAlreadyExists = currentCustomer.getAccountTypes().contains(requestParts[1]);
+				if (accountAlreadyExists) {
 					return "You already have a " + requestParts[1] + " account.\nWhat would you like to do?";
 				} else {
 					String accountType = requestParts[1];
@@ -135,47 +137,21 @@ public class NewBank {
 	 * @param requestParts
 	 * @return success or fail messages
 	 */
-	private String payCommand(CustomerID customer, String[] requestParts) {
-		// If user just enters PAY
-		if (requestParts.length == 1) {
-			return "Please enter in this format: PAY yourAccountType, accountName, amount";
-		}
-
-		// If the user enters PAY without specifying an account type
-		if (requestParts.length < 4) {
-			return "Please enter the account type (Main, Savings, or Checking), the recipient's name, and the amount to transfer\n" +
-					"in this format: PAY yourAccountType, accountName, amount";
-		}
-
-		// Extract the yourAccountType, accountName of recipient, and amount from the requestParts array
-		String[] paymentDetails = requestParts[1].split(",");
-		if (paymentDetails.length != 3) {
-			return "Invalid input format. Please enter in this format: yourAccountType, accountName, amount";
-		}
-
-		String yourAccountType = paymentDetails[0].trim();
-
-		// Check if the yourAccountType is valid (Main, Savings, or Checking)
-		if (!("Main".equalsIgnoreCase(yourAccountType) || "Savings".equalsIgnoreCase(yourAccountType) || "Checking".equalsIgnoreCase(yourAccountType))) {
-			return "Invalid account type. Please use one of the following: Main, Savings, or Checking";
-		}
-
-		// Check if the specified account exists for the customer
-		//if (!customers.containsKey(customer.getKey()) || !customers.get(customer.getKey()).hasAccountOfType(yourAccountType)) {
-		//	return "You don't have an account of type " + yourAccountType + " to make the payment.";
-		//}
-
-
+	private String payCommand(CustomerID customer, String[] requestParts) throws IOException {
 		Customer currentCustomer = customers.get(customer.getKey());
-		double checkCurrentBalance = currentCustomer.checkBalance();
-		boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
-		boolean isNumeric = true;
-
-		//checks if the second thing they entered is a username that exists
+    	Customer payCustomer = customers.get(requestParts[1]);
+    
+    	// If user just enters PAY
+		if (requestParts.length == 1) {
+			return "Please enter in this format: PAY, accountName, amount";
+		}
+    
+    	//checks if the second thing they entered is a username that exists
 		if (!customers.containsKey(requestParts[1])) {
 			return "Please make sure the accountName is correct\nPlease enter like this - 'PAY accountName amount'";
 		}
-
+    
+    	boolean isNumeric = true;
 		//checks if third thing they entered is a number
 		try {
 			Double num = Double.parseDouble(requestParts[2]);
@@ -185,15 +161,33 @@ public class NewBank {
 		if (!isNumeric) {
 			return "Please check that you entered a correct value.\nPlease enter like this - 'PAY accountName amount'";
 		}
+    
+    	if (requestParts[2].equals("0")) {
+			 return "You cannot pay someone £0";
+		}
+    
+		//get user input - asking them which account they would like to pay from and to
+		String payerAccount = NewBankClientHandler.getUserInput("From which account?");
+		if (!currentCustomer.getAccountTypes().contains(payerAccount)) {
+			return "You don't have a " + payerAccount + " account";
+		}
 
+		String targetAccount = NewBankClientHandler.getUserInput("To which account?");
+		if (!payCustomer.getAccountTypes().contains(targetAccount)) {
+			return "The person your trying to pay does not have a " + targetAccount + " account";
+		}
+
+
+    	boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
+		double checkCurrentBalance = currentCustomer.checkBalance(payerAccount);
 		if(isForeignAccount) {
-			boolean enoughBalancePresent = checkCurrentBalance > Double.parseDouble(requestParts[2]);
+			boolean enoughBalancePresent = checkCurrentBalance >= Double.parseDouble(requestParts[2]);
 			if (enoughBalancePresent) {
+
 				//Make payment to person
-				Customer payCustomer = customers.get(requestParts[1]);
-				payCustomer.makePayment(requestParts[2]);
+				payCustomer.makePayment(requestParts[2], targetAccount);
 				//Make deduction to the customer's account
-				currentCustomer.makeDeduction(requestParts[2]);
+				currentCustomer.makeDeduction(requestParts[2], payerAccount);
 				return "The Payment has been made";
 			} else {
 				return "There's not enough funds in the account";
