@@ -139,25 +139,19 @@ public class NewBank {
 	 */
 	private String payCommand(CustomerID customer, String[] requestParts) throws IOException {
 		Customer currentCustomer = customers.get(customer.getKey());
-    Customer payCustomer = customers.get(requestParts[1]);
+    	Customer payCustomer = customers.get(requestParts[1]);
     
-    // If user just enters PAY
+    	// If user just enters PAY
 		if (requestParts.length == 1) {
 			return "Please enter in this format: PAY, accountName, amount";
 		}
-
-		// If the user enters PAY without specifying an account type
-		if (requestParts.length < 4) {
-			return "Please enter the account type (Main, Savings, or Checking), the recipient's name, and the amount to transfer\n" +
-					"in this format: PAY, accountName, amount";
-		}
     
-    //checks if the second thing they entered is a username that exists
+    	//checks if the second thing they entered is a username that exists
 		if (!customers.containsKey(requestParts[1])) {
 			return "Please make sure the accountName is correct\nPlease enter like this - 'PAY accountName amount'";
 		}
     
-    boolean isNumeric = true;
+    	boolean isNumeric = true;
 		//checks if third thing they entered is a number
 		try {
 			Double num = Double.parseDouble(requestParts[2]);
@@ -168,7 +162,7 @@ public class NewBank {
 			return "Please check that you entered a correct value.\nPlease enter like this - 'PAY accountName amount'";
 		}
     
-    if (requestParts[2].equals("0")) {
+    	if (requestParts[2].equals("0")) {
 			 return "You cannot pay someone £0";
 		}
     
@@ -184,7 +178,8 @@ public class NewBank {
 		}
 
 
-    boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
+    	boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
+		double checkCurrentBalance = currentCustomer.checkBalance(payerAccount);
 		if(isForeignAccount) {
 			boolean enoughBalancePresent = checkCurrentBalance >= Double.parseDouble(requestParts[2]);
 			if (enoughBalancePresent) {
