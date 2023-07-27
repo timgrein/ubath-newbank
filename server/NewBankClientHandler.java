@@ -9,9 +9,11 @@ import java.net.Socket;
 public class NewBankClientHandler extends Thread{
 	
 	private NewBank bank;
-	private static BufferedReader in;
-	private static PrintWriter out;
-	private boolean isLoggedIn;
+	private BufferedReader in;
+	private PrintWriter out;
+	private static boolean isLoggedIn;
+	private static boolean logOutRequested = false;
+
 	
 	
 	public NewBankClientHandler(Socket s) throws IOException {
@@ -25,6 +27,12 @@ public class NewBankClientHandler extends Thread{
 	public static String getUserInput(String message) throws IOException {
 		out.println(message);
 		return in.readLine();
+    
+	//if user has requested to logout - exit while loop
+	public static void logOut() {
+		logOutRequested = true;
+		isLoggedIn = false;
+
 	}
 	
 	public void run() {
@@ -63,6 +71,7 @@ public class NewBankClientHandler extends Thread{
 				// if they don't have an account
 				// let them create a name and password and what type of account they would like to open
 				if (answer.equals("no")) {
+					out.println("Initiating new account registration. Please enter the required information:");
 					out.println("Enter name:");
 					String username = in.readLine();
 					out.println("Enter password:");
@@ -73,8 +82,14 @@ public class NewBankClientHandler extends Thread{
 					out.println(response);
 				}
 				else {
-					out.println("Log In Failed, try again");
-					out.println();
+					//if user has requested to log out, don't print the fail message
+					if (logOutRequested) {
+						out.println("Successfully logged out");
+						out.println();
+					} else {
+						out.println("Log in Failed, try again");
+						out.println();
+					}
 				}
 			}
 		} catch (IOException e) {

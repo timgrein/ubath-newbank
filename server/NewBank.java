@@ -68,6 +68,8 @@ public class NewBank {
 				return newAccountCreation(customer, requestParts);
 			case "PAY" :
 				return payCommand(customer, requestParts);
+			case "LOGOUT":
+				return logOut();
 			default : return "FAIL";
 			}
 		}
@@ -76,6 +78,11 @@ public class NewBank {
 	
 	private String showMyAccounts(CustomerID customer) {
 		return (customers.get(customer.getKey())).accountsToString();
+	}
+
+	private String logOut() {
+		NewBankClientHandler.logOut();
+		return "Logging out";
 	}
 
 	/**
@@ -125,16 +132,46 @@ public class NewBank {
 	/**
 	 * This method allow customer to make payments to other bank users
 	 * The method first check if the payments is not to customer's own account and also if funds are available
+	 * In order to make payment the following format should be used: PAY accountNAME amount (example: PAY John 20)
 	 * @param customer
 	 * @param requestParts
 	 * @return success or fail messages
 	 */
 	private String payCommand(CustomerID customer, String[] requestParts) throws IOException {
 		Customer currentCustomer = customers.get(customer.getKey());
-		boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
+    Customer payCustomer = customers.get(requestParts[1]);
+    
+    // If user just enters PAY
+		if (requestParts.length == 1) {
+			return "Please enter in this format: PAY, accountName, amount";
+		}
 
-		Customer payCustomer = customers.get(requestParts[1]);
-
+		// If the user enters PAY without specifying an account type
+		if (requestParts.length < 4) {
+			return "Please enter the account type (Main, Savings, or Checking), the recipient's name, and the amount to transfer\n" +
+					"in this format: PAY, accountName, amount";
+		}
+    
+    //checks if the second thing they entered is a username that exists
+		if (!customers.containsKey(requestParts[1])) {
+			return "Please make sure the accountName is correct\nPlease enter like this - 'PAY accountName amount'";
+		}
+    
+    boolean isNumeric = true;
+		//checks if third thing they entered is a number
+		try {
+			Double num = Double.parseDouble(requestParts[2]);
+		} catch (NumberFormatException e) {
+			isNumeric = false;
+		}
+		if (!isNumeric) {
+			return "Please check that you entered a correct value.\nPlease enter like this - 'PAY accountName amount'";
+		}
+    
+    if (requestParts[2].equals("0")) {
+			 return "You cannot pay someone £0";
+		}
+    
 		//get user input - asking them which account they would like to pay from and to
 		String payerAccount = NewBankClientHandler.getUserInput("From which account?");
 		if (!currentCustomer.getAccountTypes().contains(payerAccount)) {
@@ -146,13 +183,12 @@ public class NewBank {
 			return "The person your trying to pay does not have a " + targetAccount + " account";
 		}
 
-		if (requestParts[2].equals("0")) {
-			 return "You cannot pay someone £0";
-		}
 
+    boolean isForeignAccount = !customer.getKey().equals(requestParts[1]);
 		if(isForeignAccount) {
+			boolean enoughBalancePresent = checkCurrentBalance >= Double.parseDouble(requestParts[2]);
+			if (enoughBalancePresent) {
 
-			if (currentCustomer.checkBalance(payerAccount) >= Double.parseDouble(requestParts[2])) {
 				//Make payment to person
 				payCustomer.makePayment(requestParts[2], targetAccount);
 				//Make deduction to the customer's account
