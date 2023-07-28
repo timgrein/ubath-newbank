@@ -92,7 +92,7 @@ public class NewBank {
 	private String showMyLenders(CustomerID customer) throws IOException {
 		Customer currentCustomer = customers.get(customer.getKey());
 		if (currentCustomer.getLenders().size() == 0) {
-			return "\nYou are not loaning anything";
+			return "\nYou are not loaning anything to anyone at the moment";
 		} else {
 			NewBankClientHandler.printMessage("\nYou lending loans:");
 			return ("\n" + customers.get(customer.getKey()).lenderToString());

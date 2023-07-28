@@ -68,20 +68,19 @@ public class NewBankClientHandler extends Thread {
 									//create new loan
 									bank.createLoan(currentCustomer, currentCustomer.getReceivers().get(0));
 								}
-								if (decision.equals("reject")) {
+								else if (decision.equals("reject")) {
 
-								}
-								else {
+								} else {
 									out.println("Please type accept or reject");
 								}
-							} else {
-								out.println("Log In Successful. What do you want to do?");
-								while (isLoggedIn) {
-									String request = in.readLine();
-									System.out.println("Request from " + customer.getKey());
-									String response = bank.processRequest(customer, request);
-									out.println(response);
-								}
+							}
+							out.println("Log In Successful. What do you want to do?");
+							while (isLoggedIn) {
+								String request = in.readLine();
+								System.out.println("Request from " + customer.getKey());
+								String response = bank.processRequest(customer, request);
+								out.println(response);
+
 							}
 						} else {
 							out.println("Log In Failed, try again");
