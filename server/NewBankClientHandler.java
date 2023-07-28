@@ -69,7 +69,7 @@ public class NewBankClientHandler extends Thread {
 									bank.createLoan(currentCustomer, currentCustomer.getReceivers().get(0));
 								}
 								else if (decision.equals("reject")) {
-
+									currentCustomer.getReceivers().remove(0);
 								} else {
 									out.println("Please type accept or reject");
 								}
