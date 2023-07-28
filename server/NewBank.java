@@ -2,6 +2,7 @@ package newbank.server;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class NewBank {
 	
@@ -70,6 +71,8 @@ public class NewBank {
 				return payCommand(customer, requestParts);
 			case "LOGOUT":
 				return logOut();
+			case "NEWLOAN" :
+				return newLoan(customer, requestParts);
 			default : return "FAIL";
 			}
 		}
@@ -197,6 +200,35 @@ public class NewBank {
 		else{
 			return "Payment cannot be made to own account";
 		}
+	}
+
+	private String newLoan(CustomerID customer, String[] requestParts) throws IOException {
+		Customer currentCustomer = customers.get(customer.getKey());
+		Customer receiver = customers.get(requestParts[1]);
+
+		String currentCustomerName = null;
+		for (Entry<String, Customer> entry: customers.entrySet()) {
+			if (entry.getValue() == currentCustomer) {
+				currentCustomerName = entry.getKey();
+				break;
+			}
+		}
+
+		String receiverName = null;
+		for (Entry<String, Customer> entry: customers.entrySet()) {
+			if (entry.getValue() == receiver) {
+				receiverName = entry.getKey();
+				break;
+			}
+		}
+
+		currentCustomer.addSender(new Sender(currentCustomerName, requestParts[1], "Loan", Double.parseDouble(requestParts[2])));
+		receiver.addReceiver(new Receiver(currentCustomerName, receiverName, "Loan", Double.parseDouble(requestParts[2])));
+
+		System.out.println(currentCustomer.senderToString());
+		System.out.println(receiver.ReceiversToString());
+
+		return ("A request for a Loan of the amount £" + requestParts[2] + " has been sent to " + receiverName);
 	}
 
 }
