@@ -14,6 +14,10 @@ public class NewBank {
 		addTestData();
 	}
 
+	public HashMap<String, Customer> getCustomers() {
+		return customers;
+	}
+
 	// add a new account if user doesn't have one
 	// checks if there is another account under the same name
 	// (collects data from NewBankClientHandler)
@@ -73,6 +77,8 @@ public class NewBank {
 				return logOut();
 			case "NEWLOAN" :
 				return newLoan(customer, requestParts);
+			case "SHOWMYLOANS" :
+				return showMyLenders(customer) + showMyBorrowers(customer);
 			default : return "FAIL";
 			}
 		}
@@ -81,6 +87,26 @@ public class NewBank {
 	
 	private String showMyAccounts(CustomerID customer) {
 		return (customers.get(customer.getKey())).accountsToString();
+	}
+
+	private String showMyLenders(CustomerID customer) throws IOException {
+		Customer currentCustomer = customers.get(customer.getKey());
+		if (currentCustomer.getLenders().size() == 0) {
+			return "\nYou are not loaning anything";
+		} else {
+			NewBankClientHandler.printMessage("\nYou lending loans:");
+			return ("\n" + customers.get(customer.getKey()).lenderToString());
+		}
+	}
+
+	private String showMyBorrowers(CustomerID customer) throws IOException {
+		Customer currentCustomer = customers.get(customer.getKey());
+		if (currentCustomer.getBorrowers().size() == 0) {
+			return "\nYou do not have any loans";
+		} else {
+			NewBankClientHandler.printMessage("Your loans:\n");
+			return ("\n" + customers.get(customer.getKey()).borrowerToString());
+		}
 	}
 
 	private String logOut() {
@@ -201,7 +227,6 @@ public class NewBank {
 			return "Payment cannot be made to own account";
 		}
 	}
-
 	private String newLoan(CustomerID customer, String[] requestParts) throws IOException {
 		Customer currentCustomer = customers.get(customer.getKey());
 		Customer receiver = customers.get(requestParts[1]);
@@ -222,13 +247,24 @@ public class NewBank {
 			}
 		}
 
-		currentCustomer.addSender(new Sender(currentCustomerName, requestParts[1], "Loan", Double.parseDouble(requestParts[2])));
-		receiver.addReceiver(new Receiver(currentCustomerName, receiverName, "Loan", Double.parseDouble(requestParts[2])));
+		String loanDestination = NewBankClientHandler.getUserInput("Which account would you like the loan paid into?");
 
-		System.out.println(currentCustomer.senderToString());
-		System.out.println(receiver.ReceiversToString());
+		//create the requests
+		currentCustomer.addSender(new Sender(currentCustomerName, requestParts[1], "Loan", Double.parseDouble(requestParts[2])));
+		receiver.addReceiver(new Receiver(currentCustomerName, receiverName, "Loan", Double.parseDouble(requestParts[2]), loanDestination));
 
 		return ("A request for a Loan of the amount £" + requestParts[2] + " has been sent to " + receiverName);
+	}
+	public void createLoan(Customer lender, Receiver receiver) throws IOException {
+
+		String loanOrigin = NewBankClientHandler.getUserInput("What account would you like this to come out of?");
+		lender.makeDeduction(Double.toString(receiver.getAmount()), loanOrigin);
+		customers.get(receiver.getSender()).makePayment(Double.toString(receiver.getAmount()), receiver.getLoanDestination());
+
+		//create Lender
+		lender.addLender(new Lender(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
+		//create Borrower
+		(customers.get(receiver.getSender())).addBorrower(new Borrower(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
 	}
 
 }

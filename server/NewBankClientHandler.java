@@ -28,6 +28,10 @@ public class NewBankClientHandler extends Thread {
 		return in.readLine();
 	}
 
+	public static void printMessage(String message) throws IOException {
+		out.println(message);
+	}
+
 	//if user has requested to logout - exit while loop
 	public static void logOut() {
 		logOutRequested = true;
@@ -54,12 +58,30 @@ public class NewBankClientHandler extends Thread {
 						// if the user is authenticated then get requests from the user and process them
 						if (customer != null) {
 							isLoggedIn = true; // Set the flag to true if login is successful
-							out.println("Log In Successful. What do you want to do?");
-							while (isLoggedIn) {
-								String request = in.readLine();
-								System.out.println("Request from " + customer.getKey());
-								String response = bank.processRequest(customer, request);
-								out.println(response);
+							Customer currentCustomer = bank.getCustomers().get(customer.getKey());
+							if (currentCustomer.getReceivers().size() > 0) {
+								out.println("You have " + currentCustomer.getReceivers().size() + " requests");
+								out.println(currentCustomer.ReceiversToString());
+								out.println("\nWould you like to accept or reject?");
+								String decision = in.readLine();
+								if (decision.equals("accept")) {
+									//create new loan
+									bank.createLoan(currentCustomer, currentCustomer.getReceivers().get(0));
+								}
+								if (decision.equals("reject")) {
+
+								}
+								else {
+									out.println("Please type accept or reject");
+								}
+							} else {
+								out.println("Log In Successful. What do you want to do?");
+								while (isLoggedIn) {
+									String request = in.readLine();
+									System.out.println("Request from " + customer.getKey());
+									String response = bank.processRequest(customer, request);
+									out.println(response);
+								}
 							}
 						} else {
 							out.println("Log In Failed, try again");

@@ -40,6 +40,10 @@ public class Customer {
 		return s;
 	}
 
+	public ArrayList<Lender> getLenders() {
+		return lenders;
+	}
+
 	public void addBorrower(Borrower borrower) {
 		borrowers.add(borrower);
 	}
@@ -50,6 +54,10 @@ public class Customer {
 			s += a.toString();
 		}
 		return s;
+	}
+
+	public ArrayList<Borrower> getBorrowers() {
+		return borrowers;
 	}
 
 	public void addSender(Sender sender) {
@@ -74,6 +82,10 @@ public class Customer {
 			s += a.toString();
 		}
 		return s;
+	}
+
+	public ArrayList<Receiver> getReceivers() {
+		return receivers;
 	}
 
 	public ArrayList<String> getAccountTypes() {
