@@ -80,6 +80,8 @@ public class NewBank {
 				return newLoan(customer, requestParts);
 			case "SHOWMYLOANS" :
 				return showMyLenders(customer) + showMyBorrowers(customer);
+			case "PAYLOAN" :
+				return payLoan(customer, requestParts);
 			default : return "FAIL";
 			}
 		}
@@ -283,24 +285,55 @@ public class NewBank {
 	}
 	public void createLoan(Customer lender, Receiver receiver) throws IOException {
 
-		Customer currentCustomer = customers.get(receiver.getSender());
+		Customer currentCustomer = customers.get(receiver.getReceiver());
 
 		String loanOrigin = NewBankClientHandler.getUserInput("What account would you like this to come out of?");
 
 		boolean accountExists = currentCustomer.getAccountTypes().contains(loanOrigin);
 		if (!accountExists) {
 			NewBankClientHandler.printMessage("You do not have that type of account");
-		} else {
-
-			//make deduction/payment
-			lender.makeDeduction(Double.toString(receiver.getAmount()), loanOrigin);
-			customers.get(receiver.getSender()).makePayment(Double.toString(receiver.getAmount()), receiver.getLoanDestination());
-
-			//create Lender
-			lender.addLender(new Lender(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
-			//create Borrower
-			(customers.get(receiver.getSender())).addBorrower(new Borrower(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
 		}
+
+		//make deduction/payment
+		lender.makeDeduction(Double.toString(receiver.getAmount()), loanOrigin);
+		customers.get(receiver.getSender()).makePayment(Double.toString(receiver.getAmount()), receiver.getLoanDestination());
+
+		//create Lender
+		lender.addLender(new Lender(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
+		//create Borrower
+		(customers.get(receiver.getSender())).addBorrower(new Borrower(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
+
+	}
+
+	public String payLoan(CustomerID customer, String[] requestParts) throws IOException {
+		Customer currentCustomer = customers.get(customer.getKey());
+
+		boolean hasALoan = currentCustomer.getBorrowers().size() > 0;
+		if (!hasALoan) {
+			return "You don't have any loans";
+		}
+
+		currentCustomer.borrowerToString();
+		double payAmount = Double.parseDouble(NewBankClientHandler.getUserInput("How much would you like to pay?"));
+		String desiredAccount = NewBankClientHandler.getUserInput("From which account?");
+
+		boolean desiredAccountExists = currentCustomer.getAccountTypes().contains(desiredAccount);
+		if (!desiredAccountExists) {
+			return "You don't have that type of account";
+		}
+
+		boolean payAmountNotValid = payAmount <= 0;
+		if (payAmountNotValid) {
+			return "You can pay £0 or less";
+		}
+
+		boolean notPayingTooMuch = payAmount <= currentCustomer.getBorrowers().get(0).getLoanAmount();
+		if (!notPayingTooMuch) {
+			return "Your paying too much";
+		}
+
+		currentCustomer.getBorrowers().get(0).changeAmount(payAmount);
+		return "The new balance on the loan is £" + currentCustomer.getBorrowers().get(0).getLoanAmount();
 	}
 
 }

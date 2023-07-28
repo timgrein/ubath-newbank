@@ -20,6 +20,10 @@ abstract class Loan {
 
     public abstract String toString();
 
+    public  void changeAmount(double amount) {
+        loanAmount = loanAmount - amount;
+    }
+
 }
 
 
