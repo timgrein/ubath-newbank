@@ -205,26 +205,31 @@ public class NewBank {
 	//original protocol states MOVE Amount From To
 	// this was changed to match format of other commands where the amount is at the end
 	public String moveCommand (CustomerID customer, String[] requestParts) {
-		Customer currentCustomer = customers.get(customer.getKey());
+	Customer currentCustomer = customers.get(customer.getKey());
 
-  	if (requestParts.length < 4) {
+
+  		if (requestParts.length < 4) {
 			return "Please enter in format: MOVE accountOrigin accountDestination amount";
 		}
 
-		boolean accountOriginExists = currentCustomer.getAccountTypes().contains(requestParts[1]);
+		String accountOrigin = requestParts[1];
+		String accountDestination = requestParts[2];
+		String amount = requestParts[3];
+
+		boolean accountOriginExists = currentCustomer.getAccountTypes().contains(accountOrigin);
 		if (!accountOriginExists) {
-			return "You do not have a " + requestParts[1] + " account";
+			return "You do not have a " + accountOrigin + " account";
 		}
 
-		boolean accountDestinationExists = currentCustomer.getAccountTypes().contains(requestParts[2]);
+		boolean accountDestinationExists = currentCustomer.getAccountTypes().contains(accountDestination);
 		if (!accountDestinationExists) {
-			return "You do not have a " + requestParts[2] + " account";
+			return "You do not have a " + accountDestination + " account";
 		}
 
 		boolean isNumeric = true;
 		//checks if fourth thing they entered is a number
 		try {
-			Double num = Double.parseDouble(requestParts[3]);
+			Double num = Double.parseDouble(amount);
 		} catch (NumberFormatException e) {
 			isNumeric = false;
 		}
@@ -232,18 +237,18 @@ public class NewBank {
 			return "Please check that you entered a correct amount.\nPlease enter like this - 'MOVE accountOrigin accountDestination amount'";
 		}
 
-		if (Double.parseDouble(requestParts[3]) <= 0) {
+		if (Double.parseDouble(amount) <= 0) {
 			return "You can't pay someone £0 or less";
 		}
 
-		boolean enoughBalance = currentCustomer.checkBalance(requestParts[1]) >= Double.parseDouble(requestParts[3]);
+		boolean enoughBalance = currentCustomer.checkBalance(accountOrigin) >= Double.parseDouble(amount);
 		if (!enoughBalance) {
 			return "You don't have enough money";
 		}
 
-		currentCustomer.makeDeduction(requestParts[3], requestParts[1]);
-		currentCustomer.makePayment(requestParts[3], requestParts[2]);
-		return "Payment of £" + requestParts[3] + " has been moved from " + requestParts[1] + " to " + requestParts[2];
+		currentCustomer.makeDeduction(amount, accountOrigin);
+		currentCustomer.makePayment(amount, accountDestination);
+		return "Payment of £" + amount + " has been moved from " + accountOrigin + " to " + accountDestination;
 	}
 
 }
