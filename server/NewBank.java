@@ -70,6 +70,8 @@ public class NewBank {
 				return payCommand(customer, requestParts);
 			case "LOGOUT":
 				return logOut();
+			case "MOVE" :
+				return moveCommand(customer, requestParts);
 			default : return "FAIL";
 			}
 		}
@@ -197,6 +199,56 @@ public class NewBank {
 		else{
 			return "Payment cannot be made to own account";
 		}
+	}
+
+	//format used: MOVE accountOrigin accountDestination amount
+	//original protocol states MOVE Amount From To
+	// this was changed to match format of other commands where the amount is at the end
+	public String moveCommand (CustomerID customer, String[] requestParts) {
+	Customer currentCustomer = customers.get(customer.getKey());
+
+
+  		if (requestParts.length < 4) {
+			return "Please enter in format: MOVE accountOrigin accountDestination amount";
+		}
+
+		String accountOrigin = requestParts[1];
+		String accountDestination = requestParts[2];
+		String amount = requestParts[3];
+
+		boolean accountOriginExists = currentCustomer.getAccountTypes().contains(accountOrigin);
+		if (!accountOriginExists) {
+			return "You do not have a " + accountOrigin + " account";
+		}
+
+		boolean accountDestinationExists = currentCustomer.getAccountTypes().contains(accountDestination);
+		if (!accountDestinationExists) {
+			return "You do not have a " + accountDestination + " account";
+		}
+
+		boolean isNumeric = true;
+		//checks if fourth thing they entered is a number
+		try {
+			Double num = Double.parseDouble(amount);
+		} catch (NumberFormatException e) {
+			isNumeric = false;
+		}
+		if (!isNumeric) {
+			return "Please check that you entered a correct amount.\nPlease enter like this - 'MOVE accountOrigin accountDestination amount'";
+		}
+
+		if (Double.parseDouble(amount) <= 0) {
+			return "You can't pay someone £0 or less";
+		}
+
+		boolean enoughBalance = currentCustomer.checkBalance(accountOrigin) >= Double.parseDouble(amount);
+		if (!enoughBalance) {
+			return "You don't have enough money";
+		}
+
+		currentCustomer.makeDeduction(amount, accountOrigin);
+		currentCustomer.makePayment(amount, accountDestination);
+		return "Payment of £" + amount + " has been moved from " + accountOrigin + " to " + accountDestination;
 	}
 
 }
