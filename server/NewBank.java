@@ -230,25 +230,29 @@ public class NewBank {
 			return "Payment cannot be made to own account";
 		}
 	}
+
+	//format: NEWLOAN userName amount
 	private String newLoan(CustomerID customer, String[] requestParts) throws IOException {
-		//If user just enters NEWLOAN
-		if (requestParts.length == 1) {
+
+		if (requestParts.length < 3) {
 			return "Please enter in format: NEWLOAN userName amount";
 		}
 
-		Customer currentCustomer = customers.get(customer.getKey());
-		Customer receiver = customers.get(requestParts[1]);
-		System.out.println(Arrays.toString(requestParts));
+		String userName = requestParts[1];
+		String amount = requestParts[2];
 
-		//checks if the second thing they entered is a username that exists
-		if (!customers.containsKey(requestParts[1])) {
+		Customer currentCustomer = customers.get(customer.getKey());
+		Customer receiver = customers.get(userName);
+
+		boolean userNameExits = customers.containsKey(userName);
+		if (!userNameExits) {
 			return "Please make sure the accountName is correct\nPlease enter like this - 'NEWLOAN userName amount'";
 		}
 
 		boolean isNumeric = true;
 		//checks if third thing they entered is a number
 		try {
-			Double num = Double.parseDouble(requestParts[2]);
+			Double num = Double.parseDouble(amount);
 		} catch (NumberFormatException e) {
 			isNumeric = false;
 		}
@@ -275,14 +279,16 @@ public class NewBank {
 		String loanDestination = NewBankClientHandler.getUserInput("Which account would you like the loan paid into?");
 
 		//checks if account exists
-		if (!currentCustomer.getAccountTypes().contains(loanDestination)) {
+		boolean accountExists = currentCustomer.getAccountTypes().contains(loanDestination);
+		if (!accountExists) {
 			return "You do not have that type of account";
 		}
-		//create the requests
-		currentCustomer.addSender(new Sender(currentCustomerName, requestParts[1], "Loan", Double.parseDouble(requestParts[2])));
-		receiver.addReceiver(new Receiver(currentCustomerName, receiverName, "Loan", Double.parseDouble(requestParts[2]), loanDestination));
 
-		return ("A request for a Loan of the amount £" + requestParts[2] + " has been sent to " + receiverName);
+		//create the requests
+		currentCustomer.addSender(new Sender(currentCustomerName, userName, "Loan", Double.parseDouble(amount)));
+		receiver.addReceiver(new Receiver(currentCustomerName, receiverName, "Loan", Double.parseDouble(amount), loanDestination));
+
+		return ("A request for a Loan of the amount £" + amount + " has been sent to " + receiverName);
 	}
 	public void createLoan(Customer lender, Receiver receiver) throws IOException {
 
@@ -295,17 +301,19 @@ public class NewBank {
 			NewBankClientHandler.printMessage("You do not have that type of account");
 		} else {
 
+			Customer borrower = customers.get(receiver.getSender());
+
 			//make deduction/payment to lender/borrower respectively
 			lender.makeDeduction(Double.toString(receiver.getAmount()), loanOrigin);
-			customers.get(receiver.getSender()).makePayment(Double.toString(receiver.getAmount()), receiver.getLoanDestination());
+			borrower.makePayment(Double.toString(receiver.getAmount()), receiver.getLoanDestination());
 
 			//create Lender
 			lender.addLender(new Lender(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
 			//create Borrower
-			(customers.get(receiver.getSender())).addBorrower(new Borrower(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
+			borrower.addBorrower(new Borrower(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
 			//delete the requests as it has been accepted
 			currentCustomer.getReceivers().remove(0);
-			customers.get(receiver.getSender()).getSenders().remove(0);
+			borrower.getSenders().remove(0);
 		}
 
 	}
