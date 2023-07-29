@@ -72,6 +72,10 @@ public class Customer {
 		return s;
 	}
 
+	public ArrayList<Sender> getSenders() {
+		return senders;
+	}
+
 	public void addReceiver(Receiver receiver) {
 		receivers.add(receiver);
 	}

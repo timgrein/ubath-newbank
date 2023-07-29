@@ -170,13 +170,13 @@ public class NewBank {
 	 * @return success or fail messages
 	 */
 	private String payCommand(CustomerID customer, String[] requestParts) throws IOException {
-		Customer currentCustomer = customers.get(customer.getKey());
-    	Customer payCustomer = customers.get(requestParts[1]);
-    
-    	// If user just enters PAY
+		// If user just enters PAY
 		if (requestParts.length == 1) {
 			return "Please enter in this format: PAY, accountName, amount";
 		}
+
+		Customer currentCustomer = customers.get(customer.getKey());
+    	Customer payCustomer = customers.get(requestParts[1]);
     
     	//checks if the second thing they entered is a username that exists
 		if (!customers.containsKey(requestParts[1])) {
@@ -231,13 +231,14 @@ public class NewBank {
 		}
 	}
 	private String newLoan(CustomerID customer, String[] requestParts) throws IOException {
-		Customer currentCustomer = customers.get(customer.getKey());
-		Customer receiver = customers.get(requestParts[1]);
-		System.out.println(Arrays.toString(requestParts));
-
+		//If user just enters NEWLOAN
 		if (requestParts.length == 1) {
 			return "Please enter in format: NEWLOAN userName amount";
 		}
+
+		Customer currentCustomer = customers.get(customer.getKey());
+		Customer receiver = customers.get(requestParts[1]);
+		System.out.println(Arrays.toString(requestParts));
 
 		//checks if the second thing they entered is a username that exists
 		if (!customers.containsKey(requestParts[1])) {
@@ -292,16 +293,20 @@ public class NewBank {
 		boolean accountExists = currentCustomer.getAccountTypes().contains(loanOrigin);
 		if (!accountExists) {
 			NewBankClientHandler.printMessage("You do not have that type of account");
+		} else {
+
+			//make deduction/payment to lender/borrower respectively
+			lender.makeDeduction(Double.toString(receiver.getAmount()), loanOrigin);
+			customers.get(receiver.getSender()).makePayment(Double.toString(receiver.getAmount()), receiver.getLoanDestination());
+
+			//create Lender
+			lender.addLender(new Lender(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
+			//create Borrower
+			(customers.get(receiver.getSender())).addBorrower(new Borrower(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
+			//delete the requests as it has been accepted
+			currentCustomer.getReceivers().remove(0);
+			customers.get(receiver.getSender()).getSenders().remove(0);
 		}
-
-		//make deduction/payment
-		lender.makeDeduction(Double.toString(receiver.getAmount()), loanOrigin);
-		customers.get(receiver.getSender()).makePayment(Double.toString(receiver.getAmount()), receiver.getLoanDestination());
-
-		//create Lender
-		lender.addLender(new Lender(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
-		//create Borrower
-		(customers.get(receiver.getSender())).addBorrower(new Borrower(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
 
 	}
 
