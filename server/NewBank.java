@@ -204,7 +204,7 @@ public class NewBank {
 	public String moveCommand (CustomerID customer, String[] requestParts) {
 		Customer currentCustomer = customers.get(customer.getKey());
 
-		if (requestParts.length == 1) {
+  if (requestParts.length < 4) {
 			return "Please enter in format: MOVE accountOrigin accountDestination amount";
 		}
 
