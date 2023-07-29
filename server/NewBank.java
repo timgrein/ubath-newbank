@@ -254,13 +254,13 @@ public class NewBank {
 
 		boolean isNumeric = true;
 		//checks if third thing they entered is a number
-    try {
+    	try {
         Double num = Double.parseDouble(amount);
-      } catch (NumberFormatException e) {
+      	} catch (NumberFormatException e) {
         isNumeric = false;
-      }
-    if (!isNumeric) {
-      return "Please check that you entered a correct value.\nPlease enter like this - 'PAY accountName amount'";
+      	}
+    	if (!isNumeric) {
+      		return "Please check that you entered a correct value.\nPlease enter like this - 'NEWLOAN userName amount'";
 		}
 
 		String currentCustomerName = null;
@@ -341,7 +341,7 @@ public class NewBank {
 
 		boolean payAmountNotValid = payAmount <= 0;
 		if (payAmountNotValid) {
-			return "You can pay £0 or less";
+			return "You cannot pay £0 or less";
 		}
 
 		boolean notPayingTooMuch = payAmount <= currentCustomer.getBorrowers().get(0).getLoanAmount();
@@ -370,7 +370,7 @@ public class NewBank {
 	public String moveCommand (CustomerID customer, String[] requestParts) {
 	Customer currentCustomer = customers.get(customer.getKey());
 
-  		if (requestParts.length < 4) {
+		if (requestParts.length < 4) {
 			return "Please enter in format: MOVE accountOrigin accountDestination amount";
 		}
 
@@ -390,13 +390,13 @@ public class NewBank {
 
 		boolean isNumeric = true;
 		//checks if fourth thing they entered is a number
-    try {
+		try {
         Double num = Double.parseDouble(amount);
-      } catch (NumberFormatException e) {
+      	} catch (NumberFormatException e) {
         isNumeric = false;
-      }
-    if (!isNumeric) {
-      return "Please check that you entered a correct amount.\nPlease enter like this - 'MOVE accountOrigin accountDestination amount'";
+      	}
+    	if (!isNumeric) {
+      		return "Please check that you entered a correct amount.\nPlease enter like this - 'MOVE accountOrigin accountDestination amount'";
 		}
 
 		if (Double.parseDouble(amount) <= 0) {
