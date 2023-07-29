@@ -345,7 +345,18 @@ public class NewBank {
 			return "Your paying too much";
 		}
 
+		Customer lender = customers.get(currentCustomer.getBorrowers().get(0).getLender());
+
 		currentCustomer.getBorrowers().get(0).changeAmount(payAmount);
+		lender.getLenders().get(0).changeAmount(payAmount);
+
+		boolean loanPaidOff = currentCustomer.getBorrowers().get(0).getLoanAmount() == 0;
+		if (loanPaidOff) {
+			//delete the loan
+			currentCustomer.getBorrowers().remove(0);
+			lender.getLenders().remove(0);
+			return "You have paid off the loan";
+		}
 		return "The new balance on the loan is £" + currentCustomer.getBorrowers().get(0).getLoanAmount();
 	}
 
