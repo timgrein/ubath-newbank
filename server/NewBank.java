@@ -201,10 +201,13 @@ public class NewBank {
 		}
 	}
 
+	//format used: MOVE accountOrigin accountDestination amount
+	//original protocol states MOVE Amount From To
+	// this was changed to match format of other commands where the amount is at the end
 	public String moveCommand (CustomerID customer, String[] requestParts) {
 		Customer currentCustomer = customers.get(customer.getKey());
 
-  if (requestParts.length < 4) {
+  	if (requestParts.length < 4) {
 			return "Please enter in format: MOVE accountOrigin accountDestination amount";
 		}
 
