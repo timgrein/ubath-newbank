@@ -19,6 +19,18 @@ public class NewBank {
 		return customers;
 	}
 
+	//allows you to retrieve a customer name from the hashmap using their ID
+	public String getCustomerName(Customer receiver) {
+		String customerName = null;
+		for (Entry<String, Customer> entry: customers.entrySet()) {
+			if (entry.getValue() == receiver) {
+				customerName = entry.getKey();
+				break;
+			}
+		}
+		return customerName;
+	}
+
 	// add a new account if user doesn't have one
 	// checks if there is another account under the same name
 	// (collects data from NewBankClientHandler)
@@ -84,7 +96,8 @@ public class NewBank {
 				return payLoan(customer, requestParts);
 			case "MOVE" :
 				return moveCommand(customer, requestParts);
-
+			case "TRANSACTIONS" :
+				return showMyTransactions(customer);
 			default : return "FAIL";
 			}
 		}
@@ -113,6 +126,15 @@ public class NewBank {
 			NewBankClientHandler.printMessage("Your loans:\n");
 			return ("\n" + customers.get(customer.getKey()).borrowerToString());
 		}
+	}
+
+	private String showMyTransactions(CustomerID customer) {
+		Customer currentCustomer = customers.get(customer.getKey());
+		boolean hasNoTransactions = currentCustomer.getTransactions().size() == 0;
+		if (hasNoTransactions) {
+			return "You have no transaction history";
+		}
+		return (currentCustomer.transactionsToString());
 	}
 
 	private String logOut() {
@@ -179,6 +201,7 @@ public class NewBank {
 		}
 
 		Customer currentCustomer = customers.get(customer.getKey());
+		String customerID = customer.getKey();
     	Customer payCustomer = customers.get(requestParts[1]);
     
     	//checks if the second thing they entered is a username that exists
@@ -221,8 +244,10 @@ public class NewBank {
 
 				//Make payment to person
 				payCustomer.makePayment(requestParts[2], targetAccount);
+				payCustomer.addTransaction(new Transaction("Payment",Double.parseDouble(requestParts[2]), getCustomerName(currentCustomer), getCustomerName(payCustomer)));
 				//Make deduction to the customer's account
 				currentCustomer.makeDeduction(requestParts[2], payerAccount);
+				currentCustomer.addTransaction(new Transaction("Payment",Double.parseDouble(requestParts[2]), getCustomerName(currentCustomer), getCustomerName(payCustomer)));
 				return "The Payment has been made";
 			} else {
 				return "There's not enough funds in the account";
@@ -409,6 +434,7 @@ public class NewBank {
 		}
 
 		currentCustomer.makeDeduction(amount, accountOrigin);
+		currentCustomer.addTransaction(new Transaction("Move", Double.parseDouble(amount), accountOrigin, accountDestination));
 		currentCustomer.makePayment(amount, accountDestination);
 		return "Payment of £" + amount + " has been moved from " + accountOrigin + " to " + accountDestination;
 	}

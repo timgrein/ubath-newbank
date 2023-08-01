@@ -13,6 +13,8 @@ public class Customer {
 	private ArrayList<Sender> senders;
 	private ArrayList<Receiver> receivers;
 
+	private ArrayList<Transaction> transactions;
+
 	private String password;
 	
 	public Customer(String password) {
@@ -26,6 +28,24 @@ public class Customer {
 
 		senders = new ArrayList<>();
 		receivers = new ArrayList<>();
+
+		transactions = new ArrayList<>();
+	}
+
+	public void addTransaction(Transaction transaction) {
+		transactions.add(transaction);
+	}
+
+	public ArrayList<Transaction> getTransactions() {
+		return transactions;
+	}
+
+	public String transactionsToString() {
+		String s = "";
+		for (Transaction a : transactions) {
+			s+= a.toString();
+		}
+		return s;
 	}
 
 	public void addLender(Lender lender) {
