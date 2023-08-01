@@ -1,7 +1,9 @@
 package newbank.server;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 public class NewBank {
 	
@@ -11,6 +13,10 @@ public class NewBank {
 	private NewBank() {
 		customers = new HashMap<>();
 		addTestData();
+	}
+
+	public HashMap<String, Customer> getCustomers() {
+		return customers;
 	}
 
 	// add a new account if user doesn't have one
@@ -70,8 +76,15 @@ public class NewBank {
 				return payCommand(customer, requestParts);
 			case "LOGOUT":
 				return logOut();
+			case "NEWLOAN" :
+				return newLoan(customer, requestParts);
+			case "SHOWMYLOANS" :
+				return showMyLenders(customer) + showMyBorrowers(customer);
+			case "PAYLOAN" :
+				return payLoan(customer, requestParts);
 			case "MOVE" :
 				return moveCommand(customer, requestParts);
+
 			default : return "FAIL";
 			}
 		}
@@ -80,6 +93,26 @@ public class NewBank {
 	
 	private String showMyAccounts(CustomerID customer) {
 		return (customers.get(customer.getKey())).accountsToString();
+	}
+
+	private String showMyLenders(CustomerID customer) throws IOException {
+		Customer currentCustomer = customers.get(customer.getKey());
+		if (currentCustomer.getLenders().size() == 0) {
+			return "\nYou are not loaning anything to anyone at the moment";
+		} else {
+			NewBankClientHandler.printMessage("\nYou lending loans:");
+			return ("\n" + customers.get(customer.getKey()).lenderToString());
+		}
+	}
+
+	private String showMyBorrowers(CustomerID customer) throws IOException {
+		Customer currentCustomer = customers.get(customer.getKey());
+		if (currentCustomer.getBorrowers().size() == 0) {
+			return "\nYou do not have any loans";
+		} else {
+			NewBankClientHandler.printMessage("Your loans:\n");
+			return ("\n" + customers.get(customer.getKey()).borrowerToString());
+		}
 	}
 
 	private String logOut() {
@@ -140,13 +173,13 @@ public class NewBank {
 	 * @return success or fail messages
 	 */
 	private String payCommand(CustomerID customer, String[] requestParts) throws IOException {
-		Customer currentCustomer = customers.get(customer.getKey());
-    	Customer payCustomer = customers.get(requestParts[1]);
-    
-    	// If user just enters PAY
+		// If user just enters PAY
 		if (requestParts.length == 1) {
 			return "Please enter in this format: PAY, accountName, amount";
 		}
+
+		Customer currentCustomer = customers.get(customer.getKey());
+    	Customer payCustomer = customers.get(requestParts[1]);
     
     	//checks if the second thing they entered is a username that exists
 		if (!customers.containsKey(requestParts[1])) {
@@ -201,14 +234,143 @@ public class NewBank {
 		}
 	}
 
+	//format: NEWLOAN userName amount
+	private String newLoan(CustomerID customer, String[] requestParts) throws IOException {
+
+		if (requestParts.length < 3) {
+			return "Please enter in format: NEWLOAN userName amount";
+		}
+
+		String userName = requestParts[1];
+		String loanAmount = requestParts[2];
+
+		Customer currentCustomer = customers.get(customer.getKey());
+		Customer receiver = customers.get(userName);
+
+		boolean userNameExits = customers.containsKey(userName);
+		if (!userNameExits) {
+			return "Please make sure the accountName is correct\nPlease enter like this - 'NEWLOAN userName amount'";
+		}
+
+		boolean isNumeric = true;
+		//checks if third thing they entered is a number
+    	try {
+        Double num = Double.parseDouble(loanAmount);
+      	} catch (NumberFormatException e) {
+        isNumeric = false;
+      	}
+    	if (!isNumeric) {
+      		return "Please check that you entered a correct value.\nPlease enter like this - 'NEWLOAN userName amount'";
+		}
+
+		String currentCustomerName = null;
+		for (Entry<String, Customer> entry: customers.entrySet()) {
+			if (entry.getValue() == currentCustomer) {
+				currentCustomerName = entry.getKey();
+				break;
+			}
+		}
+
+		String receiverName = null;
+		for (Entry<String, Customer> entry: customers.entrySet()) {
+			if (entry.getValue() == receiver) {
+				receiverName = entry.getKey();
+				break;
+			}
+		}
+		NewBankClientHandler.printMessage(String.valueOf(currentCustomer.getAccountTypes()));
+		String loanDestination = NewBankClientHandler.getUserInput("Which account would you like the loan paid into?");
+
+		//checks if account exists
+		boolean accountExists = currentCustomer.getAccountTypes().contains(loanDestination);
+		if (!accountExists) {
+			return "You do not have that type of account";
+		}
+
+		//create the requests
+		currentCustomer.addSender(new Sender(currentCustomerName, userName, "Loan", Double.parseDouble(loanAmount)));
+		receiver.addReceiver(new Receiver(currentCustomerName, receiverName, "Loan", Double.parseDouble(loanAmount), loanDestination));
+
+		return ("A request for a Loan of the amount £" + loanAmount + " has been sent to " + receiverName);
+	}
+  
+	public void createLoan(Customer lender, Receiver receiver) throws IOException {
+
+		Customer currentCustomer = customers.get(receiver.getReceiver());
+		NewBankClientHandler.printMessage(String.valueOf(currentCustomer.getAccountTypes()));
+		String loanOrigin = NewBankClientHandler.getUserInput("What account would you like this to come out of?");
+
+		boolean accountExists = currentCustomer.getAccountTypes().contains(loanOrigin);
+		if (!accountExists) {
+			NewBankClientHandler.printMessage("You do not have that type of account");
+		} else {
+
+			Customer borrower = customers.get(receiver.getSender());
+
+			//make deduction/payment to lender/borrower respectively
+			lender.makeDeduction(Double.toString(receiver.getAmount()), loanOrigin);
+			borrower.makePayment(Double.toString(receiver.getAmount()), receiver.getLoanDestination());
+
+			//create Lender
+			lender.addLender(new Lender(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
+			//create Borrower
+			borrower.addBorrower(new Borrower(receiver.getAmount(), receiver.getReceiver(), receiver.getSender()));
+			//delete the requests as it has been accepted
+			currentCustomer.getReceivers().remove(0);
+			borrower.getSenders().remove(0);
+		}
+
+	}
+
+	public String payLoan(CustomerID customer, String[] requestParts) throws IOException {
+		Customer currentBorrower = customers.get(customer.getKey());
+
+		boolean hasALoan = currentBorrower.getBorrowers().size() > 0;
+		if (!hasALoan) {
+			return "You don't have any loans";
+		}
+
+		currentBorrower.borrowerToString();
+		double payAmount = Double.parseDouble(NewBankClientHandler.getUserInput("How much would you like to pay?"));
+		String desiredAccount = NewBankClientHandler.getUserInput("From which account?");
+
+		boolean desiredAccountExists = currentBorrower.getAccountTypes().contains(desiredAccount);
+		if (!desiredAccountExists) {
+			return "You don't have that type of account";
+		}
+
+		boolean payAmountNotValid = payAmount <= 0;
+		if (payAmountNotValid) {
+			return "You cannot pay £0 or less";
+		}
+
+		boolean notPayingTooMuch = payAmount <= currentBorrower.getBorrowers().get(0).getLoanAmount();
+		if (!notPayingTooMuch) {
+			return "Your paying too much";
+		}
+
+		Customer lender = customers.get(currentBorrower.getBorrowers().get(0).getLender());
+
+		currentBorrower.getBorrowers().get(0).changeAmount(payAmount);
+		lender.getLenders().get(0).changeAmount(payAmount);
+
+		boolean loanPaidOff = currentBorrower.getBorrowers().get(0).getLoanAmount() == 0;
+		if (loanPaidOff) {
+			//delete the loan
+			currentBorrower.getBorrowers().remove(0);
+			lender.getLenders().remove(0);
+			return "You have paid off the loan";
+		}
+		return "The new balance on the loan is £" + currentBorrower.getBorrowers().get(0).getLoanAmount();
+  }
+
 	//format used: MOVE accountOrigin accountDestination amount
 	//original protocol states MOVE Amount From To
 	// this was changed to match format of other commands where the amount is at the end
 	public String moveCommand (CustomerID customer, String[] requestParts) {
 	Customer currentCustomer = customers.get(customer.getKey());
 
-
-  		if (requestParts.length < 4) {
+		if (requestParts.length < 4) {
 			return "Please enter in format: MOVE accountOrigin accountDestination amount";
 		}
 
@@ -229,12 +391,12 @@ public class NewBank {
 		boolean isNumeric = true;
 		//checks if fourth thing they entered is a number
 		try {
-			Double num = Double.parseDouble(amount);
-		} catch (NumberFormatException e) {
-			isNumeric = false;
-		}
-		if (!isNumeric) {
-			return "Please check that you entered a correct amount.\nPlease enter like this - 'MOVE accountOrigin accountDestination amount'";
+        Double num = Double.parseDouble(amount);
+      	} catch (NumberFormatException e) {
+        isNumeric = false;
+      	}
+    	if (!isNumeric) {
+      		return "Please check that you entered a correct amount.\nPlease enter like this - 'MOVE accountOrigin accountDestination amount'";
 		}
 
 		if (Double.parseDouble(amount) <= 0) {
