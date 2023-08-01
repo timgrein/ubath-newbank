@@ -342,10 +342,9 @@ public class NewBank {
 			return "You don't have that type of account";
 		}
 
-		boolean payAmountNotValid = payAmount <= 0;
-		if (payAmountNotValid) {
-			return "You cannot pay £0 or less";
-		}
+                if (paymentAmount <= 0) {
+                        return "You cannot pay £0 or less";
+                 }
 
 		boolean notPayingTooMuch = payAmount <= currentCustomer.getBorrowers().get(0).getLoanAmount();
 		if (!notPayingTooMuch) {
