@@ -324,7 +324,10 @@ public class NewBank {
 
 	public String payLoan(CustomerID customer, String[] requestParts) throws IOException {
 		Customer currentCustomer = customers.get(customer.getKey());
-
+   // Input validation
+    if (requestParts.length < 2) {
+        return "Please enter in format: PAYLOAN amount";
+    }
 		boolean hasALoan = currentCustomer.getBorrowers().size() > 0;
 		if (!hasALoan) {
 			return "You don't have any loans";
