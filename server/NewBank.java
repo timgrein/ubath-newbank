@@ -241,13 +241,13 @@ public class NewBank {
 			return "Please enter in format: NEWLOAN userName amount";
 		}
 
-		String userName = requestParts[1];
-		String amount = requestParts[2];
+		String receiverUserName = requestParts[1];
+		String loanAmount = requestParts[2];
 
 		Customer currentCustomer = customers.get(customer.getKey());
-		Customer receiver = customers.get(userName);
+		Customer receiver = customers.get(receiverUserName);
 
-		boolean userNameExits = customers.containsKey(userName);
+		boolean userNameExits = customers.containsKey(receiverUserName);
 		if (!userNameExits) {
 			return "Please make sure the accountName is correct\nPlease enter like this - 'NEWLOAN userName amount'";
 		}
@@ -255,7 +255,7 @@ public class NewBank {
 		boolean isNumeric = true;
 		//checks if third thing they entered is a number
     	try {
-        Double num = Double.parseDouble(amount);
+        Double num = Double.parseDouble(loanAmount);
       	} catch (NumberFormatException e) {
         isNumeric = false;
       	}
@@ -279,6 +279,7 @@ public class NewBank {
 			}
 		}
 
+		NewBankClientHandler.printMessage("Your accounts:\n" +String.valueOf(currentCustomer.getAccountTypes()));
 		String loanDestination = NewBankClientHandler.getUserInput("Which account would you like the loan paid into?");
 
 		//checks if account exists
@@ -288,16 +289,17 @@ public class NewBank {
 		}
 
 		//create the requests
-		currentCustomer.addSender(new Sender(currentCustomerName, userName, "Loan", Double.parseDouble(amount)));
-		receiver.addReceiver(new Receiver(currentCustomerName, receiverName, "Loan", Double.parseDouble(amount), loanDestination));
+		currentCustomer.addSender(new Sender(currentCustomerName, receiverUserName, "Loan", Double.parseDouble(loanAmount)));
+		receiver.addReceiver(new Receiver(currentCustomerName, receiverName, "Loan", Double.parseDouble(loanAmount), loanDestination));
 
-		return ("A request for a Loan of the amount £" + amount + " has been sent to " + receiverName);
+		return ("A request for a Loan of the amount £" + loanAmount + " has been sent to " + receiverName);
 	}
   
 	public void createLoan(Customer lender, Receiver receiver) throws IOException {
 
 		Customer currentCustomer = customers.get(receiver.getReceiver());
 
+		NewBankClientHandler.printMessage("Your accounts:\n" +String.valueOf(currentCustomer.getAccountTypes()));
 		String loanOrigin = NewBankClientHandler.getUserInput("What account would you like this to come out of?");
 
 		boolean accountExists = currentCustomer.getAccountTypes().contains(loanOrigin);
@@ -323,18 +325,18 @@ public class NewBank {
 	}
 
 	public String payLoan(CustomerID customer, String[] requestParts) throws IOException {
-		Customer currentCustomer = customers.get(customer.getKey());
+		Customer currentBorrower = customers.get(customer.getKey());
 
-		boolean hasALoan = currentCustomer.getBorrowers().size() > 0;
+		boolean hasALoan = currentBorrower.getBorrowers().size() > 0;
 		if (!hasALoan) {
 			return "You don't have any loans";
 		}
 
-		currentCustomer.borrowerToString();
+		currentBorrower.borrowerToString();
 		double payAmount = Double.parseDouble(NewBankClientHandler.getUserInput("How much would you like to pay?"));
-		String desiredAccount = NewBankClientHandler.getUserInput("From which account?");
+		String sourceAccount = NewBankClientHandler.getUserInput("From which account?");
 
-		boolean desiredAccountExists = currentCustomer.getAccountTypes().contains(desiredAccount);
+		boolean desiredAccountExists = currentBorrower.getAccountTypes().contains(sourceAccount);
 		if (!desiredAccountExists) {
 			return "You don't have that type of account";
 		}
@@ -344,24 +346,24 @@ public class NewBank {
 			return "You cannot pay £0 or less";
 		}
 
-		boolean notPayingTooMuch = payAmount <= currentCustomer.getBorrowers().get(0).getLoanAmount();
+		boolean notPayingTooMuch = payAmount <= currentBorrower.getBorrowers().get(0).getLoanAmount();
 		if (!notPayingTooMuch) {
 			return "Your paying too much";
 		}
 
-		Customer lender = customers.get(currentCustomer.getBorrowers().get(0).getLender());
+		Customer lender = customers.get(currentBorrower.getBorrowers().get(0).getLender());
 
-		currentCustomer.getBorrowers().get(0).changeAmount(payAmount);
+		currentBorrower.getBorrowers().get(0).changeAmount(payAmount);
 		lender.getLenders().get(0).changeAmount(payAmount);
 
-		boolean loanPaidOff = currentCustomer.getBorrowers().get(0).getLoanAmount() == 0;
+		boolean loanPaidOff = currentBorrower.getBorrowers().get(0).getLoanAmount() == 0;
 		if (loanPaidOff) {
 			//delete the loan
-			currentCustomer.getBorrowers().remove(0);
+			currentBorrower.getBorrowers().remove(0);
 			lender.getLenders().remove(0);
 			return "You have paid off the loan";
 		}
-		return "The new balance on the loan is £" + currentCustomer.getBorrowers().get(0).getLoanAmount();
+		return "The new balance on the loan is £" + currentBorrower.getBorrowers().get(0).getLoanAmount();
   }
 
 	//format used: MOVE accountOrigin accountDestination amount
