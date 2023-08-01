@@ -376,6 +376,10 @@ public class NewBank {
 
 		Customer lender = customers.get(currentBorrower.getBorrowers().get(0).getLender());
 
+		//add transactions
+		lender.addTransaction(new Transaction("Loan Payment", payAmount, getCustomerName(currentBorrower), getCustomerName(lender)));
+		currentBorrower.addTransaction(new Transaction("Loan Payment", payAmount, getCustomerName(currentBorrower), getCustomerName(lender)));
+		//change loan amounts
 		currentBorrower.getBorrowers().get(0).changeAmount(payAmount);
 		lender.getLenders().get(0).changeAmount(payAmount);
 
