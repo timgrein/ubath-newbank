@@ -7,24 +7,28 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class ExampleClient extends Thread{
-	
+public class ExampleClient extends Thread {
+
 	private Socket server;
-	private PrintWriter bankServerOut;	
+	private PrintWriter bankServerOut;
 	private BufferedReader userInput;
-	private Thread bankServerResponceThread;
-	
+	private Thread bankServerResponseThread;
+
 	public ExampleClient(String ip, int port) throws UnknownHostException, IOException {
-		server = new Socket(ip,port);
-		userInput = new BufferedReader(new InputStreamReader(System.in)); 
-		bankServerOut = new PrintWriter(server.getOutputStream(), true); 
-		
-		bankServerResponceThread = new Thread() {
-			private BufferedReader bankServerIn = new BufferedReader(new InputStreamReader(server.getInputStream())); 
+		server = new Socket(ip, port);
+		userInput = new BufferedReader(new InputStreamReader(System.in));
+		bankServerOut = new PrintWriter(server.getOutputStream(), true);
+
+		bankServerResponseThread = new Thread() {
+			private BufferedReader bankServerIn = new BufferedReader(new InputStreamReader(server.getInputStream()));
+
 			public void run() {
 				try {
-					while(true) {
+					while (true) {
 						String response = bankServerIn.readLine();
+						if (response == null) {
+							break; // Exit the loop if server output stream is closed
+						}
 						System.out.println(response);
 					}
 				} catch (IOException e) {
@@ -33,25 +37,37 @@ public class ExampleClient extends Thread{
 				}
 			}
 		};
-		bankServerResponceThread.start();
+		bankServerResponseThread.start();
 	}
-	
-	
+
 	public void run() {
-		while(true) {
+		try {
+			while (true) {
+				String command = userInput.readLine();
+				if (command == null) {
+					break; // Exit the loop if user input is null (e.g., when server output stream is closed)
+				}
+				bankServerOut.println(command);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
 			try {
-				while(true) {
-					String command = userInput.readLine();
-					bankServerOut.println(command);
-				}				
+				bankServerOut.close();
+				server.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
-	
-	public static void main(String[] args) throws UnknownHostException, IOException, InterruptedException {
-		new ExampleClient("localhost",14002).start();
+
+	public static void main(String[] args) throws UnknownHostException, IOException {
+		ExampleClient client = new ExampleClient("localhost", 14002);
+		client.start();
+		try {
+			client.join(); // Wait for the client thread to finish
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 }
