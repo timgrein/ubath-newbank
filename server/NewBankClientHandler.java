@@ -38,89 +38,87 @@ public class NewBankClientHandler extends Thread {
 		isLoggedIn = false;
 	}
 
-		public void run() {
-			// keep getting requests from the client and processing them
-			try {
-				while (!isLoggedIn) {
-					// login or create account
-					out.println("Do you have an account with us?");
-					String answer = in.readLine();
-					if (answer.equals("yes")) {
-						// ask for username
-						out.println("Enter Username");
-						String userName = in.readLine();
-						// ask for password
-						out.println("Enter Password");
-						String password = in.readLine();
-						out.println("Checking Details...");
-						// authenticate user and get customer ID token from bank for use in subsequent requests
-						CustomerID customer = bank.checkLogInDetails(userName, password);
-						// if the user is authenticated then get requests from the user and process them
-						if (customer != null) {
-							isLoggedIn = true; // Set the flag to true if login is successful
-							Customer currentCustomer = bank.getCustomers().get(customer.getKey());
-							if (currentCustomer.getReceivers().size() > 0) {
-								out.println("You have " + currentCustomer.getReceivers().size() + " requests");
-								out.println(currentCustomer.ReceiversToString());
-								out.println("\nWould you like to accept or reject?");
-								String decision = in.readLine();
-								if (decision.equals("accept")) {
-									//create new loan
-									bank.createLoan(currentCustomer, currentCustomer.getReceivers().get(0));
-								}
-								else if (decision.equals("reject")) {
-									currentCustomer.getReceivers().remove(0);
-								} else {
-									out.println("Please type accept or reject");
-								}
-							}
-							out.println("Log In Successful. What do you want to do?");
-							while (isLoggedIn) {
-								String request = in.readLine();
-								System.out.println("Request from " + customer.getKey());
-								String response = bank.processRequest(customer, request);
-								out.println(response);
+	public void run() {
+		// keep getting requests from the client and processing them
+		// print welcome message
+		out.println("\nWelcome to NewBank – Your Reliable Banking Solution");
 
-							}
-						} else {
-							out.println("Log In Failed, try again");
-							out.println();
+		try {
+			while (!isLoggedIn) {
+				// login or create account
+				out.println("\nPlease select an option from the menu below:\n");
+				out.println("[1] Log In             [2] Create New Account             [3] Exit");
+
+				String answer = in.readLine();
+
+				if (answer.equals("1")) {
+					// ask for username
+					out.println("Enter Username");
+					String userName = in.readLine();
+					// ask for password
+					out.println("Enter Password");
+					String password = in.readLine();
+					out.println("Checking Details...");
+					// authenticate user and get customer ID token from bank for use in subsequent requests
+					CustomerID customer = bank.checkLogInDetails(userName, password);
+					// if the user is authenticated then get requests from the user and process them
+					if (customer != null) {
+						isLoggedIn = true; // Set the flag to true if login is successful
+						out.println("Log In Successful. What do you want to do?");
+						while (isLoggedIn) {
+							String request = in.readLine();
+							System.out.println("Request from " + customer.getKey());
+							String response = bank.processRequest(customer, request);
+							out.println(response);
 						}
-					}
-					// if they don't have an account
-					// let them create a name and password and what type of account they would like to open
-					if (answer.equals("no")) {
-						out.println("Initiating new account registration. Please enter the required information:");
-						out.println("Enter name:");
-						String username = in.readLine();
-						out.println("Enter password:");
-						String password = in.readLine();
-						out.println("What kind of account do want to make with us?: Main, Savings, or Checking");
-						String accountType = in.readLine();
-						String response = NewBank.addNewAccount(username, password, accountType);
-						out.println(response);
 					} else {
-						//if user has requested to log out, don't print the fail message
-						if (logOutRequested) {
-							out.println("Successfully logged out");
-							out.println();
+						out.println("Log In Failed, try again");
+						out.println();
+					}
+				} else if (answer.equals("2")) {
+					out.println("Initiating new account registration. Please enter the required information:");
+					out.println("Enter name:");
+					String username = in.readLine();
+					out.println("Enter password:");
+					String password = in.readLine();
+
+					String accountType;
+					while (true) {
+						out.println("What kind of account do you want to make with us?: Main, Savings, or Checking");
+						accountType = in.readLine();
+						if (accountType.equalsIgnoreCase("Main") || accountType.equalsIgnoreCase("Savings") || accountType.equalsIgnoreCase("Checking")) {
+							break; // Valid input, exit the loop
 						} else {
-							out.println("Log in Failed, try again");
-							out.println();
+							out.println("Invalid account type. Please enter 'Main', 'Savings', or 'Checking'.");
 						}
 					}
+					String response = NewBank.addNewAccount(username, password, accountType);
+					out.println(response);
+
+				} else if (answer.equals("3")) {
+					out.println("\nThank you. Have a nice day");
+					break;
+				} else {
+					if (logOutRequested) {
+						out.println("Successfully logged out");
+					} else {
+						out.println("Invalid choice. Please enter a valid option.");
+					}
+					out.println();
 				}
+			} // End of while loop
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				in.close();
+				out.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-			} finally {
-				try {
-					in.close();
-					out.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-					Thread.currentThread().interrupt();
-				}
+				Thread.currentThread().interrupt();
 			}
 		}
-
 	}
+
+
+}
